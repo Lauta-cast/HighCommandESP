@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Detector de humo</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #101827;
+    color: white;
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+  }
+
+  .panel {
+    background: #1e293b;
+    padding: 35px;
+    border-radius: 20px;
+    text-align: center;
+    width: min(85%, 380px);
+  }
+
+  h1 { font-size: 27px; }
+
+  #estado {
+    font-size: 25px;
+    font-weight: bold;
+    margin: 30px 0;
+  }
+
+  #lectura {
+    color: #cbd5e1;
+    font-size: 18px;
+  }
+
+  button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+</style>
+</head>
+
+<body>
+<div class="panel">
+  <h1>Detector de humo</h1>
+
+  <p id="conexion">Bluetooth desconectado</p>
+
+  <button id="conectar">Conectar ESP32</button>
+
+  <div id="estado">Esperando conexión</div>
+
+  <p id="lectura">Lectura: --</p>
+</div>
+
+<script>
+const SERVICE_UUID =
+  "12345678-1234-1234-1234-123456789000";
+
+const CHARACTERISTIC_UUID =
+  "12345678-1234-1234-1234-123456789001";
+
+async function conectar() {
+  try {
+    document.getElementById("conexion").textContent =
+      "Buscando dispositivo...";
+
+    const dispositivo = await navigator.bluetooth.requestDevice({
+      filters: [{ name: "Detector_Humo_ESP32" }],
+      optionalServices: [SERVICE_UUID]
+    });
+
+    const servidor = await dispositivo.gatt.connect();
+
+    const servicio = await servidor.getPrimaryService(
+      SERVICE_UUID
+    );
+
+    const caracteristica = await servicio.getCharacteristic(
+      CHARACTERISTIC_UUID
+    );
+
+    document.getElementById("conexion").textContent =
+      "Bluetooth conectado";
+
+    async function actualizar() {
+      try {
+        const dato = await caracteristica.readValue();
+
+        const texto = new TextDecoder().decode(dato);
+        const partes = texto.split(",");
+
+        const valor = Number(partes[0]);
+        const humo = partes[1] === "1";
+
+        document.getElementById("lectura").textContent =
+          "Lectura del sensor: " + valor;
+
+        const estado = document.getElementById("estado");
+
+        if (humo) {
+          estado.textContent = "¡HUMO DETECTADO!";
+          estado.style.color = "#f87171";
+        } else {
+          estado.textContent = "SIN DETECCIÓN";
+          estado.style.color = "#4ade80";
+        }
+      } catch (error) {
+        document.getElementById("conexion").textContent =
+          "Conexión perdida";
+      }
+    }
+
+    await actualizar();
+    setInterval(actualizar, 1000);
+
+  } catch (error) {
+    document.getElementById("conexion").textContent =
+      "No se pudo conectar";
+  }
+}
+
+document.getElementById("conectar").addEventListener(
+  "click", conectar
+);
+</script>
+</body>
+</html>
