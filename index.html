@@ -100,10 +100,12 @@ async function conectar() {
     await audioContext.resume();
 
     const dispositivo =
-      await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: [SERVICE_UUID]
-      });
+  await navigator.bluetooth.requestDevice({
+    filters: [
+      { name: "Detector_Humo_ESP32" }
+    ],
+    optionalServices: [SERVICE_UUID]
+  });
 
     dispositivo.addEventListener("gattserverdisconnected", () => {
       document.getElementById("conexion").textContent =
