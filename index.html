@@ -3,224 +3,655 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Detector de humo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmokeGuard | Monitor de humo</title>
 
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #101827;
-    color: white;
-    display: grid;
-    place-items: center;
-    min-height: 100vh;
-  }
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
-  .panel {
-    background: #1e293b;
-    padding: 35px;
-    border-radius: 20px;
-    text-align: center;
-    width: min(85%, 380px);
-  }
+:root {
+  --bg: #080e19;
+  --panel: #111c2c;
+  --panel-light: #17253a;
+  --text: #edf4ff;
+  --muted: #8293aa;
+  --blue: #43a9ff;
+  --green: #39e6a0;
+  --red: #ff526c;
+}
 
-  h1 { font-size: 27px; }
+* { box-sizing: border-box; }
 
-  #estado {
-    font-size: 27px;
-    font-weight: bold;
-    margin: 30px 0;
-  }
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  background:
+    radial-gradient(ellipse at 50% -20%, #183c65 0%, transparent 55%),
+    radial-gradient(circle at 90% 80%, #102b3b 0%, transparent 35%),
+    var(--bg);
+}
 
-  #lectura {
-    color: #cbd5e1;
-    font-size: 19px;
-  }
+.container {
+  width: min(100% - 36px, 1050px);
+  margin: auto;
+}
 
-  button {
-    background: #2563eb;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 14px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    margin: 5px;
-  }
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 27px 0;
+  border-bottom: 1px solid #ffffff12;
+}
 
-  .alarma {
-    background: #7f1d1d;
-    animation: parpadeo 0.7s infinite alternate;
-  }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-  @keyframes parpadeo {
-    from { background: #7f1d1d; }
-    to { background: #dc2626; }
-  }
+.logo {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  color: var(--blue);
+  background: #43a9ff18;
+  border: 1px solid #43a9ff40;
+}
+
+.brand-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -.5px;
+}
+
+.brand-name span { color: var(--blue); }
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #68778c;
+}
+
+.dot.connected {
+  background: var(--green);
+  box-shadow: 0 0 12px var(--green);
+}
+
+main { padding: 55px 0 40px; }
+
+.eyebrow {
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+h1 {
+  margin: 12px 0 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(30px, 5vw, 45px);
+  text-align: center;
+  letter-spacing: -1.8px;
+}
+
+.subtitle {
+  color: var(--muted);
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 38px;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 18px;
+}
+
+.card {
+  background: linear-gradient(145deg, #15243a, #101a29);
+  border: 1px solid #ffffff12;
+  border-radius: 22px;
+  padding: 25px;
+  box-shadow: 0 18px 50px #00000025;
+}
+
+.main-card {
+  min-height: 370px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.main-card::before {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: #39e6a008;
+  filter: blur(40px);
+}
+
+.state-label {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 2px;
+  font-weight: 700;
+  z-index: 1;
+}
+
+.indicator {
+  width: 155px;
+  height: 155px;
+  border-radius: 50%;
+  margin: 27px 0;
+  display: grid;
+  place-items: center;
+  position: relative;
+  z-index: 1;
+  background: radial-gradient(circle, #39e6a01b, #39e6a005 68%);
+  border: 1px solid #39e6a055;
+  box-shadow: 0 0 45px #39e6a018, inset 0 0 25px #39e6a010;
+  transition: .4s;
+}
+
+.indicator svg {
+  width: 65px;
+  height: 65px;
+  stroke: var(--green);
+  transition: .4s;
+}
+
+.indicator::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border: 1px solid #39e6a025;
+  border-radius: 50%;
+}
+
+.main-card.alarm .indicator {
+  background: radial-gradient(circle, #ff526c30, #ff526c08 68%);
+  border-color: #ff526c99;
+  box-shadow: 0 0 55px #ff526c30, inset 0 0 25px #ff526c15;
+  animation: pulse 1.3s infinite;
+}
+
+.main-card.alarm .indicator svg { stroke: var(--red); }
+.main-card.alarm .indicator::after { border-color: #ff526c55; }
+
+@keyframes pulse {
+  50% { transform: scale(1.045); }
+}
+
+#estado {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 27px;
+  font-weight: 700;
+  z-index: 1;
+}
+
+#descripcion {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 7px;
+  z-index: 1;
+}
+
+.side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.section-title {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.reading {
+  margin-top: 22px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+#valor {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 49px;
+  font-weight: 700;
+  letter-spacing: -2px;
+}
+
+.unit {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.bar-bg {
+  margin-top: 20px;
+  height: 9px;
+  border-radius: 20px;
+  background: #26364b;
+  overflow: hidden;
+}
+
+#barra {
+  height: 100%;
+  width: 0%;
+  border-radius: 20px;
+  background: linear-gradient(90deg, #39e6a0, #43a9ff);
+  transition: width .4s, background .4s;
+}
+
+.threshold {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.connection-card { flex: 1; }
+
+.connection-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 22px;
+}
+
+.connection-name { font-weight: 600; font-size: 14px; }
+
+.connection-value {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+button {
+  border: 0;
+  border-radius: 12px;
+  padding: 14px 19px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+button:hover { transform: translateY(-2px); }
+
+#connectBtn {
+  flex: 1;
+  color: #071321;
+  background: linear-gradient(110deg, #43a9ff, #68c5ff);
+  box-shadow: 0 7px 22px #43a9ff25;
+}
+
+#silenciarBtn {
+  color: var(--text);
+  background: #26364b;
+  border: 1px solid #ffffff15;
+}
+
+#silenciarBtn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.info-card {
+  padding: 18px;
+  border-radius: 16px;
+  background: #111c2c;
+  border: 1px solid #ffffff10;
+}
+
+.info-label {
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 9px;
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+footer {
+  border-top: 1px solid #ffffff12;
+  margin-top: 45px;
+  padding: 22px 0;
+  color: #64758c;
+  font-size: 11px;
+  text-align: center;
+}
+
+@media(max-width: 700px) {
+  main { padding-top: 35px; }
+  .dashboard { grid-template-columns: 1fr; }
+  .main-card { min-height: 330px; }
+  .info-grid { grid-template-columns: 1fr; }
+  header { padding: 19px 0; }
+}
 </style>
 </head>
 
 <body>
-<div class="panel" id="panel">
-  <h1>Detector de humo</h1>
+<div class="container">
 
-  <p id="conexion">Bluetooth desconectado</p>
+<header>
+  <div class="brand">
+    <div class="logo">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M12 3c-2 3-5 5-5 10a5 5 0 0 0 10 0c0-2-1-4-2-5 0 3-2 3-2 3s1-4-1-8z"/>
+      </svg>
+    </div>
+    <div class="brand-name">SMOKE<span>GUARD</span></div>
+  </div>
 
-  <button id="conectar">Conectar ESP32</button>
-  <button id="silenciar">Silenciar alarma</button>
+  <div class="header-status">
+    <span class="dot" id="headerDot"></span>
+    <span id="headerStatus">Desconectado</span>
+  </div>
+</header>
 
-  <div id="estado">Esperando conexión</div>
+<main>
+  <div class="eyebrow">Sistema de monitoreo ambiental</div>
+  <h1>Panel de detección</h1>
+  <p class="subtitle">Monitoreo en tiempo real mediante sensor MQ-2</p>
 
-  <p id="lectura">Lectura: --</p>
-  <p id="umbral">Umbral de detección: 900</p>
+  <div class="dashboard">
+
+    <section class="card main-card" id="mainCard">
+      <div class="state-label">ESTADO DEL AMBIENTE</div>
+
+      <div class="indicator">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3c-2 3-5 5-5 10a5 5 0 0 0 10 0c0-2-1-4-2-5 0 3-2 3-2 3s1-4-1-8z"/>
+          <path d="M10 15a2 2 0 0 0 4 0"/>
+        </svg>
+      </div>
+
+      <div id="estado">Sin conexión</div>
+      <div id="descripcion">Conectá el dispositivo para comenzar</div>
+    </section>
+
+    <div class="side-column">
+
+      <section class="card">
+        <div class="section-title">Lectura del sensor</div>
+        <div class="reading">
+          <span id="valor">---</span>
+          <span class="unit">ADC / 4095</span>
+        </div>
+        <div class="bar-bg">
+          <div id="barra"></div>
+        </div>
+        <div class="threshold">
+          <span>Nivel registrado</span>
+          <span>Umbral: 900</span>
+        </div>
+      </section>
+
+      <section class="card connection-card">
+        <div class="section-title">Dispositivo</div>
+
+        <div class="connection-row">
+          <span class="connection-name">ESP32 · MQ-2</span>
+          <span class="connection-value" id="deviceStatus">Inactivo</span>
+        </div>
+
+        <div class="connection-row">
+          <span class="connection-name">Bluetooth LE</span>
+          <span class="connection-value" id="bluetoothStatus">Esperando</span>
+        </div>
+
+        <div class="actions">
+          <button id="connectBtn">Conectar dispositivo</button>
+          <button id="silenciarBtn" disabled>Silenciar</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-label">TECNOLOGÍA</div>
+      <div class="info-value">Bluetooth Low Energy</div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">SENSOR</div>
+      <div class="info-value">MQ-2</div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">ACTUALIZACIÓN</div>
+      <div class="info-value">Cada 1 segundo</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  SMOKEGUARD · Sistema experimental de monitoreo · ESP32 + MQ-2
+</footer>
 </div>
 
 <script>
-const SERVICE_UUID =
-  "12345678-1234-1234-1234-123456789000";
-
-const CHARACTERISTIC_UUID =
-  "12345678-1234-1234-1234-123456789001";
-
+const SERVICE_UUID = "12345678-1234-1234-1234-123456789000";
+const CHARACTERISTIC_UUID = "12345678-1234-1234-1234-123456789001";
 const UMBRAL_HUMO = 900;
 
-let audioContext = null;
-let oscilador = null;
-let ganancia = null;
-let alarmaSilenciada = false;
-let humoAnterior = false;
+const connectBtn = document.getElementById("connectBtn");
+const silenciarBtn = document.getElementById("silenciarBtn");
 
-async function conectar() {
+let characteristic;
+let audioContext;
+let oscillator;
+let gainNode;
+let alarmaActiva = false;
+let dispositivo;
+
+function actualizarConexion(conectado) {
+  document.getElementById("headerDot").classList.toggle("connected", conectado);
+  document.getElementById("headerStatus").textContent =
+    conectado ? "Conectado" : "Desconectado";
+  document.getElementById("deviceStatus").textContent =
+    conectado ? "Activo" : "Inactivo";
+  document.getElementById("bluetoothStatus").textContent =
+    conectado ? "Conectado" : "Esperando";
+}
+
+function iniciarSonido() {
+  if (audioContext && audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+
+  if (!audioContext) {
+    audioContext = new AudioContext();
+  }
+
+  if (oscillator) return;
+
+  oscillator = audioContext.createOscillator();
+  gainNode = audioContext.createGain();
+
+  oscillator.type = "square";
+  oscillator.frequency.value = 850;
+  gainNode.gain.value = 0.13;
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  oscillator.start();
+
+  let tonoAlto = true;
+  window.sonidoIntervalo = setInterval(() => {
+    if (!oscillator) return;
+    tonoAlto = !tonoAlto;
+    oscillator.frequency.setValueAtTime(
+      tonoAlto ? 850 : 550,
+      audioContext.currentTime
+    );
+  }, 350);
+}
+
+function detenerSonido() {
+  if (oscillator) {
+    oscillator.stop();
+    oscillator.disconnect();
+    oscillator = null;
+  }
+
+  if (gainNode) {
+    gainNode.disconnect();
+    gainNode = null;
+  }
+
+  clearInterval(window.sonidoIntervalo);
+  alarmaActiva = false;
+  silenciarBtn.disabled = true;
+}
+
+function mostrarAlarma(humo) {
+  const card = document.getElementById("mainCard");
+  const estado = document.getElementById("estado");
+  const descripcion = document.getElementById("descripcion");
+  const barra = document.getElementById("barra");
+
+  card.classList.toggle("alarm", humo);
+
+  if (humo) {
+    estado.textContent = "¡HUMO DETECTADO!";
+    estado.style.color = "var(--red)";
+    descripcion.textContent = "Nivel por encima del umbral establecido";
+    barra.style.background = "var(--red)";
+
+    if (!alarmaActiva) {
+      alarmaActiva = true;
+      silenciarBtn.disabled = false;
+      iniciarSonido();
+    }
+  } else {
+    estado.textContent = "Sin detección";
+    estado.style.color = "var(--green)";
+    descripcion.textContent = "El nivel está dentro del rango configurado";
+    barra.style.background = "linear-gradient(90deg, #39e6a0, #43a9ff)";
+
+    detenerSonido();
+  }
+}
+
+function procesarLectura(valor) {
+  document.getElementById("valor").textContent = valor;
+
+  const porcentaje = Math.min((valor / 4095) * 100, 100);
+  document.getElementById("barra").style.width = porcentaje + "%";
+
+  mostrarAlarma(valor >= UMBRAL_HUMO);
+}
+
+connectBtn.addEventListener("click", async () => {
   try {
-    // El navegador exige una interacción del usuario
-    audioContext = new (window.AudioContext ||
-                       window.webkitAudioContext)();
+    connectBtn.disabled = true;
+    connectBtn.textContent = "Conectando...";
 
-    await audioContext.resume();
-
-    const dispositivo =
-  await navigator.bluetooth.requestDevice({
-    filters: [
-      { name: "Detector_Humo_ESP32" }
-    ],
-    optionalServices: [SERVICE_UUID]
-  });
-
-    dispositivo.addEventListener("gattserverdisconnected", () => {
-      document.getElementById("conexion").textContent =
-        "Bluetooth desconectado";
-
-      detenerAlarma();
+    dispositivo = await navigator.bluetooth.requestDevice({
+      filters: [{ name: "Detector_Humo_ESP32" }],
+      optionalServices: [SERVICE_UUID]
     });
 
-    const servidor = await dispositivo.gatt.connect();
+    dispositivo.addEventListener("gattserverdisconnected", () => {
+      actualizarConexion(false);
+      document.getElementById("estado").textContent = "Sin conexión";
+      document.getElementById("descripcion").textContent =
+        "Se perdió la conexión con el dispositivo";
+      document.getElementById("valor").textContent = "---";
+      document.getElementById("barra").style.width = "0%";
+      document.getElementById("mainCard").classList.remove("alarm");
+      detenerSonido();
+      connectBtn.disabled = false;
+      connectBtn.textContent = "Conectar dispositivo";
+    });
 
-    const servicio =
-      await servidor.getPrimaryService(SERVICE_UUID);
+    const server = await dispositivo.gatt.connect();
+    const service = await server.getPrimaryService(SERVICE_UUID);
+    characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
 
-    const caracteristica =
-      await servicio.getCharacteristic(
-        CHARACTERISTIC_UUID
-      );
+    actualizarConexion(true);
+    connectBtn.textContent = "Dispositivo conectado";
 
-    document.getElementById("conexion").textContent =
-      "Bluetooth conectado";
+    async function leer() {
+      if (!dispositivo.gatt.connected) return;
 
-    async function actualizar() {
       try {
-        const dato = await caracteristica.readValue();
+        const data = await characteristic.readValue();
+        const texto = new TextDecoder().decode(data);
+        const valor = parseInt(texto.split(",")[0], 10);
 
-        const texto = new TextDecoder().decode(dato);
-        const partes = texto.split(",");
-
-        const valor = Number(partes[0]);
-
-        if (!Number.isFinite(valor)) return;
-
-        // La decisión se toma exclusivamente en la página
-        const humo = valor >= UMBRAL_HUMO;
-
-        document.getElementById("lectura").textContent =
-          "Lectura del sensor: " + valor;
-
-        const estado = document.getElementById("estado");
-        const panel = document.getElementById("panel");
-
-        if (humo) {
-          estado.textContent = "¡HUMO DETECTADO!";
-          estado.style.color = "#f87171";
-          panel.classList.add("alarma");
-
-          if (!humoAnterior && !alarmaSilenciada) {
-            iniciarAlarma();
-          }
-
-        } else {
-          estado.textContent = "SIN DETECCIÓN";
-          estado.style.color = "#4ade80";
-          panel.classList.remove("alarma");
-
-          alarmaSilenciada = false;
-          detenerAlarma();
+        if (!Number.isNaN(valor)) {
+          procesarLectura(valor);
         }
-
-        humoAnterior = humo;
-
       } catch (error) {
-        document.getElementById("conexion").textContent =
-          "Error leyendo el sensor";
-        detenerAlarma();
+        console.error("Error al leer:", error);
       }
     }
 
-    await actualizar();
-    window.lecturaIntervalo =
-      setInterval(actualizar, 1000);
+    await leer();
+
+    window.lecturaIntervalo = setInterval(leer, 1000);
 
   } catch (error) {
-    document.getElementById("conexion").textContent =
-      "No se pudo conectar: " + error.message;
+    console.error(error);
+    connectBtn.disabled = false;
+    connectBtn.textContent = "Conectar dispositivo";
+    actualizarConexion(false);
+    alert("No se pudo conectar. Verificá que el ESP32 esté encendido y cerca.");
   }
-}
+});
 
-function iniciarAlarma() {
-  if (!audioContext || oscilador) return;
-
-  oscilador = audioContext.createOscillator();
-  ganancia = audioContext.createGain();
-
-  oscilador.type = "square";
-  oscilador.frequency.value = 850;
-  ganancia.gain.value = 0.12;
-
-  oscilador.connect(ganancia);
-  ganancia.connect(audioContext.destination);
-
-  oscilador.start();
-}
-
-function detenerAlarma() {
-  if (oscilador) {
-    oscilador.stop();
-    oscilador.disconnect();
-    ganancia.disconnect();
-
-    oscilador = null;
-    ganancia = null;
-  }
-}
-
-document.getElementById("conectar").addEventListener(
-  "click", conectar
-);
-
-document.getElementById("silenciar").addEventListener(
-  "click", () => {
-    alarmaSilenciada = true;
-    detenerAlarma();
-  }
-);
+silenciarBtn.addEventListener("click", () => {
+  detenerSonido();
+  silenciarBtn.textContent = "Silenciado";
+});
 </script>
 </body>
 </html>
